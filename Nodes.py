@@ -94,7 +94,6 @@ class WaterNode():
         self.setProps()
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
     def detState(self):
 
         if "x" in self.__dict__:
@@ -355,6 +354,16 @@ class WaterNode():
     @staticmethod
     def fromX(x, f, g):
         return f + (x * (g - f))
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Dunders
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    def __str__(self):
+        return "Water Node: P = {}MPa, T = {}C, h1 = {}, s1 = {}".format(self.P_full.MPa,self.T_full.C,self.h,self.s)
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    def __repr__(self):
+        return "Water Node: P = {}MPa, T = {}C, h1 = {}, s1 = {}".format(self.P_full.MPa,self.T_full.C,self.h,self.s)
 
 if __name__ == "__main__":
     #1

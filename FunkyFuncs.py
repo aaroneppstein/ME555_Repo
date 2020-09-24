@@ -62,7 +62,7 @@ def cache(func):
 
 # decorator to calculate duration
 # taken by any function.
-def calculate_time(func):
+def timer(func):
     # added arguments inside the inner1,
     # if function takes any arguments,
     # can be added like this.
@@ -78,6 +78,10 @@ def calculate_time(func):
         return val
 
     return inner1
+
+def concat(a,b):
+    yield from a
+    yield from b
 
 def dict_from_func(func):
     return {func.__name__: func}

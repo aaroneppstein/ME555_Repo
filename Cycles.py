@@ -11,6 +11,7 @@ from FunkyFuncs import *
 from MiscFunctions import *
 from Nodes import *
 from collections import *
+import itertools
 
 def turbineReal(eta,p1,p2s):
     """
@@ -457,6 +458,95 @@ class RankineDynamic():
         self.dispCFWH()
         self.dispOut()
 
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Class Methods
+    # Can initiate full cycles with these calls
+    # config1: 1 turbine
+    # config2: 2 turbines
+    # config3: 1 turbine, cfwh
+    # config4: 2 turbines, cfwh
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    @classmethod
+    def configuration1(cls, P1, P2, T1, eta_p = 1, eta_turb = 1, mDot = 1):
+        a = cls(mDot=mDot, eta_turb=eta_turb, eta_p=eta_p)
+        a.addTurbine(P1=P1, P2=P2, T1=T1)
+        a.addCondenser()
+        a.addPump(P=P1)
+        #a.addCFWH(mixMethod = mixMethod, fracTurbP = fracTurbP, turbNum = turbNum, returnTempDiff = returnTempDiff)
+        a.initialize()
+        return a
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    @classmethod
+    def configuration2(cls, P1, P2, P3, T1, T2, eta_p=1, eta_turb=1, mDot=1):
+        a = cls(mDot=mDot, eta_turb=eta_turb, eta_p=eta_p)
+        a.addTurbine(P1=P1, P2=P2, T1=T1)
+        a.addTurbine(P1=P2, P2=P3, T1=T2)
+        a.addCondenser()
+        a.addPump(P=P1)
+        a.initialize()
+        return a
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    @classmethod
+    def configuration3(cls, P1, P2, P3, P4, T1, T2,T3, eta_p=1, eta_turb=1, mDot=1):
+        a = cls(mDot=mDot, eta_turb=eta_turb, eta_p=eta_p)
+        a.addTurbine(P1=P1, P2=P2, T1=T1)
+        a.addTurbine(P1=P2, P2=P3, T1=T2)
+        a.addTurbine(P1=P3, P2=P4, T1=T3)
+        a.addCondenser()
+        a.addPump(P=P1)
+        a.initialize()
+        return a
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    @classmethod
+    def configuration4(cls, P1, P2, T1, eta_p=1, eta_turb=1, mDot=1, mixMethod="MixingChamber",
+                           fracTurbP=0.3, turbNum=1, returnTempDiff=3):
+            a = cls(mDot=mDot, eta_turb=eta_turb, eta_p=eta_p)
+            a.addTurbine(P1=P1, P2=P2, T1=T1)
+            a.addCondenser()
+            a.addPump(P=P1)
+            a.addCFWH(mixMethod=mixMethod, fracTurbP=fracTurbP, turbNum=turbNum, returnTempDiff=returnTempDiff)
+            a.initialize()
+            return a
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    @classmethod
+    def configuration5(cls, P1, P2, P3, T1, T2, eta_p=1, eta_turb=1, mDot=1, mixMethod="MixingChamber",
+                           fracTurbP=0.3, turbNum=1, returnTempDiff=3):
+            a = cls(mDot=mDot, eta_turb=eta_turb, eta_p=eta_p)
+            a.addTurbine(P1=P1, P2=P2, T1=T1)
+            a.addTurbine(P1=P2, P2=P3, T1=T2)
+            a.addCondenser()
+            a.addPump(P=P1)
+            a.addCFWH(mixMethod=mixMethod, fracTurbP=fracTurbP, turbNum=turbNum, returnTempDiff=returnTempDiff)
+            a.initialize()
+            return a
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    @classmethod
+    def configuration6(cls, P1, P2, P3, P4, T1, T2, T3, eta_p=1, eta_turb=1, mDot=1, mixMethod="MixingChamber",
+                           fracTurbP=0.3, turbNum=1, returnTempDiff=3):
+            a = cls(mDot=mDot, eta_turb=eta_turb, eta_p=eta_p)
+            a.addTurbine(P1=P1, P2=P2, T1=T1)
+            a.addTurbine(P1=P2, P2=P3, T1=T2)
+            a.addTurbine(P1=P3, P2=P4, T1=T3)
+            a.addCondenser()
+            a.addPump(P=P1)
+            a.addCFWH(mixMethod=mixMethod, fracTurbP=fracTurbP, turbNum=turbNum, returnTempDiff=returnTempDiff)
+            a.initialize()
+            return a
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Dunders
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    '''def __str__(self):
+        return "Water Node: P = {}MPa, T = {}C, h1 = {}, s1 = {}".format(self.P_full.MPa,self.T_full.C,self.h,self.s)
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    def __repr__(self):
+        return "Water Node: P = {}MPa, T = {}C, h1 = {}, s1 = {}".format(self.P_full.MPa,self.T_full.C,self.h,self.s)'''
+
 
 
 
@@ -471,5 +561,16 @@ if __name__ =="__main__":
     a.addPump(P = Pressure.from_MPa(9))
     a.addCFWH(fracTurbP = .125)
     a.initialize()
+    b = RankineDynamic.configuration5(Pressure.from_MPa(9), Pressure.from_MPa(1), Pressure.from_kPa(8),
+                                      Temperature(600), Temperature(500),
+                                      mDot = 50, eta_turb = 0.92, eta_p = .8, mixMethod="MixingChamber", fracTurbP=0.125)
+    c = RankineDynamic.configuration5(Pressure.from_MPa(9), Pressure.from_MPa(1), Pressure.from_kPa(8),
+                                      Temperature(600), Temperature(500),
+                                      mDot = 50, eta_turb = 0.92, eta_p = .8, mixMethod="Trap", fracTurbP=0.125)
+    #a.dispFull()
+    #b.dispFull()
 
-    a.dispFull()
+    cyc = [a,b,c]
+    dict = {"Pressure":(c.Qin for c in cyc),"Temperature":(c.W_net for c in cyc),"Enthalpy(h)":(c.mDot for c in cyc)}
+    d = pd.DataFrame(dict)
+    print(d)
