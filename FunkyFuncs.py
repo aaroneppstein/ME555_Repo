@@ -1,6 +1,7 @@
 import functools
 import time
 import math
+import pandas as pd
 
 def debug(func):
     """Print the function signature and return value"""
@@ -58,6 +59,40 @@ def cache(func):
         return wrapper_cache.cache[cache_key]
     wrapper_cache.cache = dict()
     return wrapper_cache
+
+def repeat(num_times):
+    def decorator_repeat(func):
+        @functools.wraps(func)
+        def wrapper_repeat(*args, **kwargs):
+            for _ in range(num_times):
+                value = func(*args, **kwargs)
+            return value
+        return wrapper_repeat
+    return decorator_repeat
+
+def toFile(path,**fileArgs):
+    import os
+    """
+    This can be attached to a function that returns a dataframe
+    :param path: 
+    :param fileArgs: 
+    :return: 
+    """
+    def decorator_toFile(func):
+        @functools.wraps(func)
+        def wrapper_toFile(*args, **kwargs):
+            value = func(*args, **kwargs)
+
+            hdr = False if os.path.isfile(path) else True
+
+            if type(value) == pd.DataFrame:
+                value.to_csv(path, mode='a', header=hdr,**fileArgs)
+            elif type(value) == dict:
+                pd.DataFrame(value).to_csv(path, mode='a', header=hdr,**fileArgs)
+
+            return value
+        return wrapper_toFile
+    return decorator_toFile
 
 
 # decorator to calculate duration

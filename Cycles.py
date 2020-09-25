@@ -96,7 +96,7 @@ class RankineDynamic():
     """
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    def __init__(self, eta_p = 1, eta_turb = 1, mDot = 1):
+    def __init__(self, eta_p = 1., eta_turb = 1., mDot = 1.):
         """
         :param eta_p: float
             The efficiency of the pumps, between 0 and 1
@@ -537,6 +537,36 @@ class RankineDynamic():
             a.addCFWH(mixMethod=mixMethod, fracTurbP=fracTurbP, turbNum=turbNum, returnTempDiff=returnTempDiff)
             a.initialize()
             return a
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    @classmethod
+    def configuration7(cls, P1, P2, P3, P4,P5, T1, T2, T3,T4, eta_p=1, eta_turb=1, mDot=1, mixMethod="MixingChamber",
+                           fracTurbP=0.3, turbNum=1, returnTempDiff=3):
+            a = cls(mDot=mDot, eta_turb=eta_turb, eta_p=eta_p)
+            a.addTurbine(P1=P1, P2=P2, T1=T1)
+            a.addTurbine(P1=P2, P2=P3, T1=T2)
+            a.addTurbine(P1=P3, P2=P4, T1=T3)
+            a.addTurbine(P1=P4, P2=P5, T1=T4)
+            a.addCondenser()
+            a.addPump(P=P1)
+            a.addCFWH(mixMethod=mixMethod, fracTurbP=fracTurbP, turbNum=turbNum, returnTempDiff=returnTempDiff)
+            a.initialize()
+            return a
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    @classmethod
+    def configuration8(cls, P1, P2, P3, P4,P5, T1, T2, T3,T4, eta_p=1, eta_turb=1, mDot=1):
+            a = cls(mDot=mDot, eta_turb=eta_turb, eta_p=eta_p)
+            a.addTurbine(P1=P1, P2=P2, T1=T1)
+            a.addTurbine(P1=P2, P2=P3, T1=T2)
+            a.addTurbine(P1=P3, P2=P4, T1=T3)
+            a.addTurbine(P1=P4, P2=P5, T1=T4)
+            a.addCondenser()
+            a.addPump(P=P1)
+            #a.addCFWH(mixMethod=mixMethod, fracTurbP=fracTurbP, turbNum=turbNum, returnTempDiff=returnTempDiff)
+            a.initialize()
+            return a
+
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Dunders
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -559,18 +589,80 @@ if __name__ =="__main__":
 
     a.addCondenser()
     a.addPump(P = Pressure.from_MPa(9))
-    a.addCFWH(fracTurbP = .125)
+    a.addCFWH(turbNum=2, fracTurbP = .125)
     a.initialize()
-    b = RankineDynamic.configuration5(Pressure.from_MPa(9), Pressure.from_MPa(1), Pressure.from_kPa(8),
+    a.dispFull()
+
+    '''b = RankineDynamic.configuration5(Pressure.from_MPa(9), Pressure.from_MPa(1), Pressure.from_kPa(8),
                                       Temperature(600), Temperature(500),
-                                      mDot = 50, eta_turb = 0.92, eta_p = .8, mixMethod="MixingChamber", fracTurbP=0.125)
+                                      mDot = 50, turbNum=1, eta_turb = 0.92, eta_p = .8, mixMethod="MixingChamber", fracTurbP=0.125)
+    #b.dispFull()
+
     c = RankineDynamic.configuration5(Pressure.from_MPa(9), Pressure.from_MPa(1), Pressure.from_kPa(8),
                                       Temperature(600), Temperature(500),
                                       mDot = 50, eta_turb = 0.92, eta_p = .8, mixMethod="Trap", fracTurbP=0.125)
     #a.dispFull()
     #b.dispFull()
 
-    cyc = [a,b,c]
-    dict = {"Pressure":(c.Qin for c in cyc),"Temperature":(c.W_net for c in cyc),"Enthalpy(h)":(c.mDot for c in cyc)}
-    d = pd.DataFrame(dict)
-    print(d)
+    cyc = [a,b,c]'''
+    '''dict = {"eta_p": (c.eta_p for c in cyc), "eta_turb": (c.eta_turb for c in cyc),
+            "mDot": (c.mDot for c in cyc), "Q1": (c.Q1 for c in cyc),
+            "Q2": (c.Q2 for c in cyc), "W_T": (c.W_T for c in cyc),
+            "Qin": (c.Qin for c in cyc), "W_net": (c.W_net for c in cyc),
+            "bwr": (c.bwr for c in cyc), "eta_cycle": (c.eta_cycle for c in cyc)}'''
+
+    '''d = pd.DataFrame()
+    for c in cyc:
+        dict = {}
+        dict["eta_p"] = [c.eta_p]
+        dict["eta_turb"] = [c.eta_turb]
+        dict["mDot"] = [c.mDot]
+        dict["Q2"] = [c.Q2]
+        dict["Qin"] = [c.Qin]
+        dict["bwr"] = [c.bwr]
+        dict["Q1"] = [c.Q1]
+        dict["W_T"] = [c.W_T]
+        dict["W_net"] = [c.W_net]
+        dict["eta_cycle"] = [c.eta_cycle]
+
+        for i, turb in enumerate(c.components["Turbines"]):
+            dict["Turbine #{}: Node 1".format(i+1)] = [turb["Node 1"]]
+            dict["Turbine #{}: Node 2".format(i+1)] = [turb["Node 2"]]
+            try:
+                dict["Turbine #{}: Node 3".format(i+1)] = [turb["Node 3"]]
+            except:
+                pass
+
+        dict["Compressor: Node 1"] = [c.components["Condensers"][0]["Node 1"]]
+        dict["Compressor: Node 2"] = [c.components["Condensers"][0]["Node 2"]]
+
+        for i, pump in enumerate(c.components["Pumps"]):
+            dict["Pump #{}: Node 1".format(i + 1)] = [pump["Node 1"]]
+            dict["Pump #{}: Node 2".format(i + 1)] = [pump["Node 2"]]
+
+        for i, cfwh in enumerate(c.components["CFWH"]):
+            dict["CFWH #{}: Node 1".format(i + 1)] = [cfwh["Node 1"]]
+            dict["CFWH #{}: Node 2".format(i + 1)] = [cfwh["Node 2"]]
+            dict["CFWH #{}: Node 3".format(i + 1)] = [cfwh["Node 3"]]
+            dict["CFWH #{}: Node 4".format(i + 1)] = [cfwh["Node 4"]]
+            dict["CFWH #{}: mixMethod".format(i + 1)] = [cfwh["mixMethod"]]
+            dict["CFWH #{}: fracTurbP".format(i + 1)] = [cfwh["fracTurbP"]]
+            dict["CFWH #{}: turbNum".format(i + 1)] = [cfwh["turbNum"]]
+            dict["CFWH #{}: returnTempDiff".format(i + 1)] = [cfwh["returnTempDiff"]]
+
+        try:
+            dict["mDot1"] = [c.mDot1]
+            dict["mDot2"] = [c.mDot2]
+            dict["y"] = [c.y]
+        except:
+            pass
+
+        #print(dict)
+
+        d = d.append(pd.DataFrame.from_dict(dict))
+
+    print(d.columns)'''
+
+
+
+
